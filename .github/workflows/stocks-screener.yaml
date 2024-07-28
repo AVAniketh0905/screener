@@ -26,6 +26,19 @@ jobs:
       - name: Run stock analysis script
         run: python main.py
 
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Commit and Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git add results.txt log.txt
+          git commit -m "Update results and log files"
+          git push origin main
+
       - name: Upload results
         uses: actions/upload-artifact@v2
         with:
