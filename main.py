@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime as dt
 import yfinance as yf
 import pandas as pd
 import logging
@@ -49,64 +49,73 @@ def calculate_returns(stock_data, period_days):
     return None
 
 
-# Fetch the list of Nifty 200 stocks (example tickers)
-nifty_200 = pd.read_csv("ind_nifty200list.csv")
+def main():
+    # Fetch the list of Nifty 200 stocks (example tickers)
+    nifty_200 = pd.read_csv("ind_nifty200list.csv")
 
-symbols = nifty_200["Symbol"]
+    symbols = nifty_200["Symbol"]
 
-stocks_data = {}
-for symbol in symbols:
-    logging.info(f"Fetching data for {symbol}...")
-    data = fetch_stock_data(f"{symbol}.NS")  # Appending ".NS" to fetch data from NSE
-    if not data.empty:
-        stocks_data[symbol] = data
-        logging.info(f"Data for {symbol} fetched successfully.")
-    else:
-        logging.info(f"No data available for {symbol}.")
+    stocks_data = {}
+    for symbol in symbols:
+        logging.info(f"Fetching data for {symbol}...")
+        data = fetch_stock_data(
+            f"{symbol}.NS"
+        )  # Appending ".NS" to fetch data from NSE
+        if not data.empty:
+            stocks_data[symbol] = data
+            logging.info(f"Data for {symbol} fetched successfully.")
+        else:
+            logging.info(f"No data available for {symbol}.")
 
-# Calculate percentage away from 52-week high and sort
-stocks_info = []
-for ticker, data in stocks_data.items():
-    away_52w_high = percentage_away_from_52w_high(data)
-    recent_price = data["Close"].iloc[-1]
-    if recent_price > 5000:
-        continue
+    # Calculate percentage away from 52-week high and sort
+    stocks_info = []
+    for ticker, data in stocks_data.items():
+        away_52w_high = percentage_away_from_52w_high(data)
+        recent_price = data["Close"].iloc[-1]
+        if recent_price > 5000:
+            continue
 
-    returns_6m = calculate_returns(data, 182)
-    returns_1y = calculate_returns(data, 365)
+        returns_6m = calculate_returns(data, 182)
+        returns_1y = calculate_returns(data, 365)
 
-    if returns_6m is not None and returns_1y is not None:
-        if returns_6m > 0 and returns_1y > 20 and returns_1y > returns_6m:
-            stocks_info.append(
-                (ticker, away_52w_high, recent_price, returns_6m, returns_1y)
-            )
+        if returns_6m is not None and returns_1y is not None:
+            if returns_6m > 0 and returns_1y > 20 and returns_1y > returns_6m:
+                stocks_info.append(
+                    (ticker, away_52w_high, recent_price, returns_6m, returns_1y)
+                )
 
-stocks_info.sort(key=lambda x: x[1])
-top_30_stocks = stocks_info[:30]
+    stocks_info.sort(key=lambda x: x[1])
+    top_30_stocks = stocks_info[:30]
 
-# Filter top n_stocks stocks meeting criteria
-max_stocks = 10
-selected_stocks = []
-for stock in top_30_stocks:
-    if len(selected_stocks) < max_stocks:
-        # Check if the stock price hasn't closed at upper or lower circuit
-        data = stocks_data[stock[0]]
-        if not (
-            (data["Close"] == data["High"]).any()
-            or (data["Close"] == data["Low"]).any()
-        ):
-            selected_stocks.append(stock[0])
+    # Filter top n_stocks stocks meeting criteria
+    max_stocks = 10
+    selected_stocks = []
+    for stock in top_30_stocks:
+        if len(selected_stocks) < max_stocks:
+            # Check if the stock price hasn't closed at upper or lower circuit
+            data = stocks_data[stock[0]]
+            if not (
+                (data["Close"] == data["High"]).any()
+                or (data["Close"] == data["Low"]).any()
+            ):
+                selected_stocks.append(stock[0])
 
-# Ensure the selected stocks were not shortlisted in the previous 5 months
-shortlisted_stocks_last_5_months = []  # Load from your historical data
-final_stocks = [
-    stock for stock in selected_stocks if stock not in shortlisted_stocks_last_5_months
-]
+    # Ensure the selected stocks were not shortlisted in the previous 5 months
+    shortlisted_stocks_last_5_months = []  # Load from your historical data
+    final_stocks = [
+        stock
+        for stock in selected_stocks
+        if stock not in shortlisted_stocks_last_5_months
+    ]
 
-# Write the final stocks to results.txt
-current_date = datetime.now().strftime("%d-%m-%Y")
-with open("results.txt", "w") as f:
-    f.write(f"Date: {current_date}\n")
-    f.write("Buy the following stocks the next day:\n")
-    for stock in final_stocks[:max_stocks]:
-        f.write(f"{stock}\n")
+    # Write the final stocks to results.txt
+    current_date = dt.now().strftime("%d-%m-%Y")
+    with open("results.txt", "w") as f:
+        f.write(f"Date: {current_date}\n")
+        f.write("Buy the following stocks the next day:\n")
+        for stock in final_stocks[:max_stocks]:
+            f.write(f"{stock}\n")
+
+
+if __name__ == "__main__":
+    main()

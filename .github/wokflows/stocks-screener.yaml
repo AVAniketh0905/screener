@@ -24,7 +24,7 @@ jobs:
           pip install yfinance pandas
 
       - name: Run stock analysis script
-        run: python your_script_name.py
+        run: python main.py
 
       - name: Upload results
         uses: actions/upload-artifact@v2
