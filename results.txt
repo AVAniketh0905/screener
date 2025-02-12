@@ -1,11 +1,11 @@
-Date: 11-02-2025
+Date: 12-02-2025
 Buy the following stocks the next day:
 BHARTIARTL
-M&M
 SRF
 LAURUSLABS
 TECHM
 ICICIBANK
+M&M
 HDFCBANK
 BIOCON
 EICHERMOT
