@@ -1,8 +1,9 @@
-Date: 28-02-2025
+Date: 03-03-2025
 Buy the following stocks the next day:
 HDFCBANK
-UPL
+BHARTIARTL
 FORTIS
+UPL
 LAURUSLABS
 INDHOTEL
 MAXHEALTH
